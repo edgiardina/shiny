@@ -4,29 +4,20 @@ using Microsoft.Extensions.Logging;
 namespace Shiny.Logging.Sqlite;
 
 
-public class SqliteLogger : ILogger
+public class SqliteLogger(string categoryName, LogLevel configLogLevel, LoggingSqliteConnection conn) : ILogger
 {
-    readonly LogLevel configLogLevel;
-    readonly LoggingSqliteConnection conn;
-
-
-    public SqliteLogger(LogLevel logLevel, LoggingSqliteConnection conn)
-    {
-        this.configLogLevel = logLevel;
-        this.conn = conn;
-    }
-
-
     public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
-    public bool IsEnabled(LogLevel logLevel) => logLevel >= this.configLogLevel;
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= configLogLevel;
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         if (!this.IsEnabled(logLevel))
             return;
 
         var message = formatter(state, exception);
-        this.conn.GetConnection().Insert(new LogStore
+        conn.GetConnection().Insert(new LogStore
         {
+            Category = categoryName,
+            StackTrace = exception?.ToString() ?? String.Empty,
             Message = message,
             EventId = eventId.Id,
             LogLevel = logLevel,
