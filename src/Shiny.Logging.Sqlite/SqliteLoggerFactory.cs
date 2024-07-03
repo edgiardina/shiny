@@ -14,6 +14,6 @@ public class SqliteLoggerProvider : ILoggerProvider
         this.conn = conn;
     }
 
-    public ILogger CreateLogger(string categoryName) => new SqliteLogger(this.logLevel, this.conn);
+    public ILogger CreateLogger(string categoryName) => new SqliteLogger(categoryName, this.logLevel, this.conn);
     public void Dispose() { }
 }
