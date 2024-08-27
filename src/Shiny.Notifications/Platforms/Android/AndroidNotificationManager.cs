@@ -10,30 +10,30 @@ using TaskStackBuilder = AndroidX.Core.App.TaskStackBuilder;
 namespace Shiny.Notifications;
 
 
-public class AndroidNotificationManager
+public class AndroidNotificationManager(
+    AndroidPlatform platform,
+    IChannelManager channelManager,
+    ISerializer serializer
+)
 {
-    public NotificationManagerCompat NativeManager { get; }
-    readonly AndroidPlatform platform;
-    readonly IChannelManager channelManager;
-    readonly ISerializer serializer;
+    public NotificationManagerCompat NativeManager => NotificationManagerCompat.From(platform.AppContext);
 
-
-    public AndroidNotificationManager(
-        AndroidPlatform platform,
-        IChannelManager channelManager,
-        ISerializer serializer
-    )
+    AlarmManager? alarms;
+    public AlarmManager Alarms
     {
-        this.platform = platform;
-        this.NativeManager = NotificationManagerCompat.From(this.platform.AppContext);
-        this.channelManager = channelManager;
-        this.serializer = serializer;
+        get
+        {
+            if (this.alarms == null || this.alarms.Handle == IntPtr.Zero)
+                this.alarms = platform.GetSystemService<AlarmManager>(Context.AlarmService);
+
+            return this.alarms;
+        }
     }
 
-
+    
     public virtual void Send(AndroidNotification notification)
     {
-        var channel = this.channelManager.Get(notification.Channel!);
+        var channel = channelManager.Get(notification.Channel!);
         var builder = this.CreateNativeBuilder(notification, channel!);
         this.NativeManager.Notify(notification.Id, builder.Build());
     }
@@ -41,13 +41,13 @@ public class AndroidNotificationManager
 
     public virtual NotificationCompat.Builder CreateNativeBuilder(AndroidNotification notification, Channel channel)
     {
-        var builder = new NotificationCompat.Builder(this.platform.AppContext, channel.Identifier);
+        var builder = new NotificationCompat.Builder(platform.AppContext, channel.Identifier);
         this.ApplyChannel(builder, notification, channel);
 
         builder
             .SetContentTitle(notification.Title)
             .SetContentIntent(this.GetLaunchPendingIntent(notification))
-            .SetSmallIcon(this.platform.GetSmallIconResource(notification.SmallIconResourceName))
+            .SetSmallIcon(platform.GetSmallIconResource(notification.SmallIconResourceName))
             .SetAutoCancel(notification.AutoCancel)
             .SetOngoing(notification.OnGoing);
 
@@ -58,7 +58,7 @@ public class AndroidNotificationManager
             builder.SetGroup(notification.Thread);
 
         //if (!notification.LocalAttachmentPath.IsEmpty())
-        //    this.platform.TrySetImage(notification.LocalAttachmentPath, builder);
+        //    platform.TrySetImage(notification.LocalAttachmentPath, builder);
 
         //if (notification.BadgeCount != null)
         //{
@@ -78,14 +78,14 @@ public class AndroidNotificationManager
 
         if (!notification.LargeIconResourceName.IsEmpty())
         {
-            var iconId = this.platform.GetResourceIdByName(notification.LargeIconResourceName!);
+            var iconId = platform.GetResourceIdByName(notification.LargeIconResourceName!);
             if (iconId > 0)
-                builder.SetLargeIcon(BitmapFactory.DecodeResource(this.platform.AppContext.Resources, iconId));
+                builder.SetLargeIcon(BitmapFactory.DecodeResource(platform.AppContext.Resources, iconId));
         }
 
         if (!notification.ColorResourceName.IsEmpty())
         {
-            var color = this.platform.GetColorResourceId(notification.ColorResourceName!);
+            var color = platform.GetColorResourceId(notification.ColorResourceName!);
             builder.SetColor(color);
         }
         return builder;
@@ -108,17 +108,13 @@ public class AndroidNotificationManager
 
 
     protected virtual PendingIntent GetAlarmPendingIntent(Notification notification)
-        => this.platform.GetBroadcastPendingIntent<ShinyNotificationBroadcastReceiver>(
+        => platform.GetBroadcastPendingIntent<ShinyNotificationBroadcastReceiver>(
             ShinyNotificationBroadcastReceiver.AlarmIntentAction,
             PendingIntentFlags.UpdateCurrent,
             0,
             intent => intent.PutExtra(AndroidNotificationProcessor.IntentNotificationKey, notification.Id)
         );
-
-
-    AlarmManager? alarms;
-    public AlarmManager Alarms => this.alarms ??= this.platform.GetSystemService<AlarmManager>(Context.AlarmService);
-
+    
 
     public virtual PendingIntent GetLaunchPendingIntent(AndroidNotification notification)
     {
@@ -126,16 +122,16 @@ public class AndroidNotificationManager
 
         if (notification.LaunchActivityType == null)
         {
-            launchIntent = this.platform!
+            launchIntent = platform
                 .AppContext!
                 .PackageManager!
-                .GetLaunchIntentForPackage(this.platform!.AppContext.PackageName!)!
+                .GetLaunchIntentForPackage(platform!.AppContext.PackageName!)!
                 .SetFlags(notification.LaunchActivityFlags);
         }
         else
         {
             launchIntent = new Intent(
-                this.platform.AppContext,
+                platform.AppContext,
                 notification.LaunchActivityType
             );
         }
@@ -146,20 +142,20 @@ public class AndroidNotificationManager
         if ((notification.LaunchActivityFlags & ActivityFlags.ClearTask) != 0)
         {
             pendingIntent = TaskStackBuilder
-                .Create(this.platform.AppContext)
+                .Create(platform.AppContext)
                 .AddNextIntent(launchIntent)
                 .GetPendingIntent(
                     notification.Id,
-                    (int)this.platform.GetPendingIntentFlags(PendingIntentFlags.OneShot)
+                    (int)platform.GetPendingIntentFlags(PendingIntentFlags.OneShot)
                 )!;
         }
         else
         {
             pendingIntent = PendingIntent.GetActivity(
-                this.platform.AppContext!,
+                platform.AppContext!,
                 notification.Id,
                 launchIntent!,
-                this.platform.GetPendingIntentFlags(PendingIntentFlags.OneShot)
+                platform.GetPendingIntentFlags(PendingIntentFlags.OneShot)
             )!;
         }
         return pendingIntent;
@@ -202,7 +198,7 @@ public class AndroidNotificationManager
 
     protected virtual void PopulateIntent(Intent intent, Notification notification)
     {
-        var content = this.serializer.Serialize(notification);
+        var content = serializer.Serialize(notification);
         intent.PutExtra(AndroidNotificationProcessor.IntentNotificationKey, content);
     }
 
@@ -211,7 +207,7 @@ public class AndroidNotificationManager
     protected virtual PendingIntent CreateActionIntent(Notification notification, ChannelAction action)
     {
         counter++;
-        return this.platform.GetBroadcastPendingIntent<ShinyNotificationBroadcastReceiver>(
+        return platform.GetBroadcastPendingIntent<ShinyNotificationBroadcastReceiver>(
             ShinyNotificationBroadcastReceiver.EntryIntentAction,
             PendingIntentFlags.UpdateCurrent,
             counter,
@@ -227,7 +223,7 @@ public class AndroidNotificationManager
     protected virtual NotificationCompat.Action CreateAction(Notification notification, ChannelAction action)
     {
         var pendingIntent = this.CreateActionIntent(notification, action);
-        var iconId = this.platform.GetResourceIdByName(action.Identifier);
+        var iconId = platform.GetResourceIdByName(action.Identifier);
         var nativeAction = new NotificationCompat.Action.Builder(iconId, action.Title, pendingIntent).Build();
 
         return nativeAction;
@@ -241,7 +237,7 @@ public class AndroidNotificationManager
             .SetLabel(action.Title)
             .Build();
 
-        var iconId = this.platform.GetResourceIdByName(action.Identifier);
+        var iconId = platform.GetResourceIdByName(action.Identifier);
         var nativeAction = new NotificationCompat.Action.Builder(iconId, action.Title, pendingIntent)
             .SetAllowGeneratedReplies(true)
             .AddRemoteInput(input)

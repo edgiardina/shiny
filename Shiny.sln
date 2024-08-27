@@ -110,6 +110,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Firebase.Analytics.iO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Firebase.Messaging.iOS.Binding", "src\Shiny.Firebase.Messaging.iOS.Binding\Shiny.Firebase.Messaging.iOS.Binding.csproj", "{F7E69503-E920-4E1E-8F7C-358DD7982738}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shiny.Ble.SetupAccessory", "src\Shiny.Ble.SetupAccessory\Shiny.Ble.SetupAccessory.csproj", "{117DC567-07E2-47BB-A8D8-65ED6C362DF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -227,6 +229,10 @@ Global
 		{F7E69503-E920-4E1E-8F7C-358DD7982738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7E69503-E920-4E1E-8F7C-358DD7982738}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7E69503-E920-4E1E-8F7C-358DD7982738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{117DC567-07E2-47BB-A8D8-65ED6C362DF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{117DC567-07E2-47BB-A8D8-65ED6C362DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{117DC567-07E2-47BB-A8D8-65ED6C362DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{117DC567-07E2-47BB-A8D8-65ED6C362DF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -261,6 +267,7 @@ Global
 		{A44BB6F8-283F-4FD7-9955-41B6B515AC98} = {6374E4D9-1BD8-4880-B603-AFDEA8345D7E}
 		{95304E51-AD99-41EA-A007-16F6FDCEC779} = {6374E4D9-1BD8-4880-B603-AFDEA8345D7E}
 		{F7E69503-E920-4E1E-8F7C-358DD7982738} = {6374E4D9-1BD8-4880-B603-AFDEA8345D7E}
+		{117DC567-07E2-47BB-A8D8-65ED6C362DF8} = {6374E4D9-1BD8-4880-B603-AFDEA8345D7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {135D86AF-4EC4-4AA0-BD06-75C410F3EA08}
