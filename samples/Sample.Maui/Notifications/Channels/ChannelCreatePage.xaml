@@ -56,6 +56,12 @@
                             </HorizontalStackLayout>
 
                             <HorizontalStackLayout>
+                                <Label Text="Title" />
+                                <Entry Text="{Binding Action1.Title}"
+                                       IsEnabled="{Binding Action1.IsEnabled}" />
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout>
                                 <Label Text="Identifier" />
                                 <Entry Text="{Binding Action1.Identifier}"
                                        IsEnabled="{Binding Action1.IsEnabled}" />
@@ -77,6 +83,12 @@
                             <HorizontalStackLayout>
                                 <Label Text="Use" />
                                 <CheckBox IsChecked="{Binding Action2.IsEnabled}" />
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout>
+                                <Label Text="Title" />
+                                <Entry Text="{Binding Action2.Title}"
+                                       IsEnabled="{Binding Action2.IsEnabled}" />
                             </HorizontalStackLayout>
 
                             <HorizontalStackLayout>
